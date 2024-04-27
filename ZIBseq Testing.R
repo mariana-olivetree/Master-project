@@ -20,32 +20,19 @@ for (col in 1:columns){data_mt[,col]=as.numeric(as.character(data_mt[,col]))}
 #Vector with class labels for the samples
 group = testdata[,2]
 
+#group -> N, O, OM, OB, N
+
 #Converts the group vector to numeric format
 group = as.numeric(group)
 
-#Create a mapping dictionary
-group_mapping = c("N" = 1, "O" = 2, "OM" = 3, "OB" = 4)
-
-#Get original groups corresponding to value 1
-original_groups_1 <- names(group_mapping[group_mapping == 1])
-original_groups_2 <- names(group_mapping[group_mapping == 2])
-original_groups_3 <- names(group_mapping[group_mapping == 3])
-original_groups_4 <- names(group_mapping[group_mapping == 4])
-
-#Display the original groups for value 1
-cat("Mapped value of 1 corresponds to original groups:", original_groups_1, "\n")
-cat("Mapped value of 2 corresponds to original groups:", original_groups_2, "\n")
-cat("Mapped value of 3 corresponds to original groups:", original_groups_3, "\n")
-cat("Mapped value of 4 corresponds to original groups:", original_groups_4, "\n")
-
-#Sets all values in group that are less than 4 (N, O and OM) to 0
+#Sets all values in group that are less than 4 (N, O and OB) to 0
 group[which(group<4)]=0
 
-#Sets all values in gr that are equal to 4 (OB) to 1
+#Sets all values in gr that are equal to 4 (OM) to 1
 group[which(group==4)]=1
 
 #Vector becomes binary
-group
+class(group)
 
 #Perfoms DGE
 result = ZIBseq(data = data_mt, outcome = group)
@@ -68,4 +55,88 @@ result_transformed$useFeature
 result_transformed$qvalues
 
 result_transformed$pvalues
+
+##########Perfoming DGE with another group#################
+
+#Vector with class labels for the samples
+group_2 = testdata[,2]
+
+#Converts the group vector to numeric format
+group_2 = as.numeric(group_2)
+
+#Selecting OB (Obese) -> number 3
+
+group_2[which(group_2<3)]=0
+
+group_2[which(group_2==4)]=0
+
+group_2[which(group_2==3)] = 1
+
+class(group_2)
+
+#Perfoms DGE
+result_OB = ZIBseq(data = data_mt, outcome = group_2, transform = TRUE)
+
+result_OB$qvalues
+
+result_OB$pvalues
+
+result_OB$sigFeature
+
+result_OB$useFeature
+
+##########Perfoming DGE with 2 groups#################
+
+#Vector with class labels for the samples
+group_3 = testdata[,2]
+
+#Converts the group vector to numeric format
+group_3 = as.numeric(group_3)
+
+group_3
+
+#Selecting OB (Obese) -> number 3
+
+group_3[which(group_3<3)] = 0
+
+group_3[which(group_3==4)] = 1
+
+group_3[which(group_3==3)] = 1
+
+group_3
+
+class(group_3)
+
+#Perfoms DGE
+result_3 = ZIBseq(data = data_mt, outcome = group_3)
+
+result_3$qvalues
+
+result_3$pvalues
+
+result_3$sigFeature
+
+result_3$useFeature
+
+##########Perfoming with categorical groups#################
+
+#Vector with class labels for the samples
+group_4 = testdata[,2]
+
+group_4
+
+#Perfoms DGE
+result_4 = ZIBseq(data = data_mt, outcome = group_4)
+
+result_4$qvalues
+
+result_4$pvalues
+
+result_4$sigFeature
+
+result_4$useFeature
+
+############Using another dataset###########################
+
+
 
