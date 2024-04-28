@@ -17,25 +17,16 @@ columns = dim(data_mt)[2]
 #Converts the data to numeric format
 for (col in 1:columns){data_mt[,col]=as.numeric(as.character(data_mt[,col]))}
 
-#Vector with class labels for the samples
 group = testdata[,2]
 
-#group -> N, O, OM, OB, N
+##########Using categorical values#########################
 
-#Converts the group vector to numeric format
-group = as.numeric(group)
 
-#Sets all values in group that are less than 4 (N, O and OB) to 0
-group[which(group<4)]=0
+# Recode the "group" variable
+group_1 = ifelse(group == "OM", "OM", "N_OW_OB")
 
-#Sets all values in gr that are equal to 4 (OM) to 1
-group[which(group==4)]=1
-
-#Vector becomes binary
-class(group)
-
-#Perfoms DGE
-result = ZIBseq(data = data_mt, outcome = group)
+# Run the ZIBseq analysis
+result = ZIBseq(data = data_mt, outcome = group_1)
 
 result$qvalues
 
@@ -45,98 +36,66 @@ result$sigFeature
 
 result$useFeature
 
-#Performs DGE with the square-root transformation of the data
-result_transformed = ZIBseq(data = data_mt, outcome = group, transform = TRUE)
 
-result_transformed$sigFeature
+##########Using categorical + sqrt#######################
 
-result_transformed$useFeature
 
-result_transformed$qvalues
+# Recode the "group" variable
+group_sqrt = ifelse(group == "OM", "OM", "N_OW_OB")
 
-result_transformed$pvalues
+# Run the ZIBseq analysis
+result_sqrt = ZIBseq(data = data_mt, outcome = group_sqrt, transform = TRUE)
 
-##########Perfoming DGE with another group#################
+result_sqrt$qvalues
 
-#Vector with class labels for the samples
-group_2 = testdata[,2]
+result_sqrt$pvalues
+
+result_sqrt$sigFeature
+
+result_sqrt$useFeature
+
+
+##########Using ordinal#################################
+
 
 #Converts the group vector to numeric format
-group_2 = as.numeric(group_2)
+group_num = as.numeric(group)
 
-#Selecting OB (Obese) -> number 3
+group_num
 
-group_2[which(group_2<3)]=0
+#Sets all values in group that are less than 4 (N, O and OB) to 0
+group_num[which(group_num<4)]=0
 
-group_2[which(group_2==4)]=0
+#Sets all values in gr that are equal to 4 (OM) to 1
+group_num[which(group_num==4)]=1
 
-group_2[which(group_2==3)] = 1
-
-class(group_2)
-
-#Perfoms DGE
-result_OB = ZIBseq(data = data_mt, outcome = group_2, transform = TRUE)
-
-result_OB$qvalues
-
-result_OB$pvalues
-
-result_OB$sigFeature
-
-result_OB$useFeature
-
-##########Perfoming DGE with 2 groups#################
-
-#Vector with class labels for the samples
-group_3 = testdata[,2]
-
-#Converts the group vector to numeric format
-group_3 = as.numeric(group_3)
-
-group_3
-
-#Selecting OB (Obese) -> number 3
-
-group_3[which(group_3<3)] = 0
-
-group_3[which(group_3==4)] = 1
-
-group_3[which(group_3==3)] = 1
-
-group_3
-
-class(group_3)
+#Vector becomes binary
+group_num
 
 #Perfoms DGE
-result_3 = ZIBseq(data = data_mt, outcome = group_3)
+result_num = ZIBseq(data = data_mt, outcome = group_num)
 
-result_3$qvalues
+result_num$qvalues
 
-result_3$pvalues
+result_num$pvalues
 
-result_3$sigFeature
+result_num$sigFeature
 
-result_3$useFeature
+result_num$useFeature
 
-##########Perfoming with categorical groups#################
 
-#Vector with class labels for the samples
-group_4 = testdata[,2]
-
-group_4
+##########Using ordinal + sqrt##########################
 
 #Perfoms DGE
-result_4 = ZIBseq(data = data_mt, outcome = group_4)
+result_num_sqrt = ZIBseq(data = data_mt, outcome = group_num, transform = TRUE)
 
-result_4$qvalues
+result_num_sqrt$qvalues
 
-result_4$pvalues
+result_num_sqrt$pvalues
 
-result_4$sigFeature
+sum(resut_num_sqrt$padj < 0.05)
 
-result_4$useFeature
+result_num_sqrt$sigFeature
 
-############Using another dataset###########################
-
-
+result_num_sqrt$useFeature
 
