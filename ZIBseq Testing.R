@@ -19,6 +19,7 @@ for (col in 1:columns){data_mt[,col]=as.numeric(as.character(data_mt[,col]))}
 
 group = testdata[,2]
 
+group
 ##########Using categorical values#########################
 
 
@@ -87,15 +88,97 @@ result_num$useFeature
 ##########Using ordinal + sqrt##########################
 
 #Perfoms DGE
-result_num_sqrt = ZIBseq(data = data_mt, outcome = group_num, transform = TRUE)
+result_num_sqrt_2 = ZIBseq(data = data_mt, outcome = group_num, transform = TRUE)
 
-result_num_sqrt$qvalues
+result_num_sqrt_2$qvalues
 
-result_num_sqrt$pvalues
+result_num_sqrt_2$pvalues
 
 sum(resut_num_sqrt$padj < 0.05)
 
-result_num_sqrt$sigFeature
+result_num_sqrt_2$sigFeature
 
 result_num_sqrt$useFeature
 
+result_num_sqrt$qvalues
+
+
+result_num_sqrt$pvalues
+
+
+result_ord = ZIBseq(data = data_mt, outcome = group_num)
+
+result_ord$sigFeature
+
+result_ord_sqrt = ZIBseq(data = data_mt, outcome = group_num, transform = TRUE)
+
+result_ord_sqrt$sigFeature
+
+result_ord_sqrt$
+
+group_num
+
+
+#TESTING
+
+test_data2 = testdata
+
+test_data2$Acidovorax[test_data2$group == "N"] <- 400
+
+#Number of columns of the metatranscriptomic data
+columns = dim(test_data2)[2]
+
+#Converts the data to numeric format
+for (col in 1:columns){test_data2[,col]=as.numeric(as.character(test_data2[,col]))}
+
+group_acido = testdata[,2]
+
+group_acido = as.numeric(group_acido)
+
+group_acido
+
+results_acido = ZIBseq(data = test_data2, outcome = group_acido )
+
+results_acido$sigFeature
+
+results_acido = ZIBseq(data = test_data2, outcome = group_acido, transform = TRUE )
+
+results_acido
+
+####################3
+
+test_data3 = testdata
+
+test_data3$Ahrensia[test_data3$group == "OM"] <- 10
+
+#Number of columns of the metatranscriptomic data
+columns = dim(test_data3)[2]
+
+#Converts the data to numeric format
+for (col in 1:columns){test_data3[,col]=as.numeric(as.character(test_data3[,col]))}
+
+group_acido = testdata[,2]
+
+group_acido = as.numeric(group_acido)
+
+group_acido
+
+results_acido = ZIBseq(data = test_data3, outcome = group_acido )
+
+results_acido$sigFeature
+
+results_acido = ZIBseq(data = test_data2, outcome = group_acido, transform = TRUE )
+
+results_acido
+
+
+bmi = testdata[,3]
+
+bmi = as.numeric(bmi)
+
+
+
+
+results_ordinal = ZIBseq(data = data_mt, outcome = bmi)
+
+results_ordinal
