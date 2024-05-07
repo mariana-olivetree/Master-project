@@ -102,24 +102,26 @@ result_num_sqrt$useFeature
 
 result_num_sqrt$qvalues
 
-
 result_num_sqrt$pvalues
 
+####################################
 
-result_ord = ZIBseq(data = data_mt, outcome = group_num)
+#Converts the group vector to numeric format
+# Define as categorias do grupo BMI na ordem desejada (N, O, OM, OB)
+categories <- c("N", "O", "OB", "OM")
 
-result_ord$sigFeature
+# Converte o grupo BMI para fatores ordenados
+group_ord <- factor(group, levels = categories, ordered = TRUE)
 
-result_ord_sqrt = ZIBseq(data = data_mt, outcome = group_num, transform = TRUE)
+# Executa o DGE considerando o grupo BMI como variável ordinal
+result_ord <- ZIBseq(data = data_mt, outcome = group_ord)
 
-result_ord_sqrt$sigFeature
+result_ord
 
-result_ord_sqrt$
-
-group_num
+##################################
 
 
-#TESTING
+#Other TESTING
 
 test_data2 = testdata
 
