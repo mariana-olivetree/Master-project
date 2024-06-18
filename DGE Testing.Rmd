@@ -1,0 +1,223 @@
+---
+title: "Logistic-beta test"
+output: html_document
+date: "2024-06-15"
+---
+
+Firstly, let's run the necessary functions from the LB functions script and libraries. The necessary functions are:
+
+-   **screen.gene** --\> This function serves as a gene screening tool, assisting in identifying genes with expression levels meeting a specified threshold, and providing relevant information about the selected genes for downstream analysis or interpretation.
+-   **LB** --\> The LB function is designed to perform a logistic regression model fitting with correction for finite sample effects. It calculates estimates and p-values for the logistic regression coefficients based on the input data. The function allows for handling zero-inflated models and applies adjustments for finite sample corrections. The function utilizes the gamlss package for logistic regression modeling and analysis.
+
+```{r}
+source("LB functions.R")
+library(tidyverse)
+```
+
+# Test #1
+
+To run the first test, I used a dataframe used in classes. This dataframe is about the gene expression of samples of pulmonary adenocarcinoma.\
+\
+The first step involved uploading the data.
+
+```{r pulmonary-data-upload}
+
+seqdata = readRDS("seqdata_pulmonary.rds")
+metadata = readRDS("metadata_pulmonary.rds")
+```
+
+```{r}
+#count data
+counts = seqdata
+
+#metadata
+metadata = metadata
+
+#Turning the variable of interest into a numerical variable
+metadata$gender_num = factor(ifelse(metadata$gender== "female",0,1))
+
+#creating gene indexes
+genes.index = screen.gene(seqdata, gene.col = NULL)$feature$index
+
+#Summing the samples
+sampleSum = apply(seqdata, 2, sum)
+
+#removal of NAs
+genes.index = genes.index[!is.na(genes.index)]
+
+sample_id = metadata$barcode
+
+variable =  metadata$gender_num
+
+j <<- 1; cat("j=")
+
+gene.BEZI <- sapply(genes.index, function(i) {
+  cat(j,".." ); j <<- j+1
+  tmp <- data.frame(y = seqdata[i,] %>% as.numeric, id = sample_id, 
+                    phenotype = variable,
+                    sampleSum = sampleSum)
+  print(dim(tmp))
+  LB(tmp) 
+})
+
+#Transpose matrix
+genes = t(gene.BEZI)
+
+#Turn into dataframe
+genes = as.data.frame(genes)
+
+#Get significant genes
+sig_genes = genes[genes$pval < 0.05, ]
+
+```
+
+The code above analyzes genetic sequencing data in relation to gender (female or male). Initially, it loads the gene count data (**seqdata**) and additional sample information (**metadat**a). The **gender** column in **metadata** is converted into a numeric variable **gender_num**, where "**female**" is encoded as 0 and "**male**" as 1, facilitating subsequent statistical analysis.
+
+Next, the **screen.gene** function creates gene indices within **seqdata**, stored in the variable **genes.index**. It calculates the sum of values for each column (representing each sample) in **seqdata** and stores it in **sampleSum**. Gene indices containing NA values are removed from **genes.index**. Variables **sample_id** and **variable** are defined based on the **barcode** and **gender_num** columns in **metadata**, respectively.
+
+Using a loop, the code iterates over each gene index in **genes.index**. For each gene, a temporary dataframe **tmp** is created containing the gene counts (y), sample identifiers (id), phenotype (variable), and sample sum (sampleSum). The **LB** function is applied to this **tmp** dataframe. Presumably, this function performs specific statistical analysis, such as logistic regression, although its exact implementation isn't provided in the code.
+
+The result of applying **LB** to each gene is stored in the list **gene.BEZI**, which is transposed and converted into a dataframe **genes**. Finally, genes with a p-value less than 0.05 are considered significant and filtered into the dataframe **sig_genes**.
+
+In summary, this code conducts gene-by-gene statistical analysis to investigate the relationship between gene expression and gender, identifying genes that show significant differences.
+
+# Test #2
+
+```{r}
+library(readr)
+
+data <-readr::read_tsv("C:\\Users\\olive\\Downloads\\de_input 1.tsv")
+meta = readr::read_tsv("C:\\Users\\olive\\Downloads\\de_res.tsv")
+```
+
+```{r}
+data_filtered = as.data.frame(data)
+
+data_filtered = data[, 8:13]
+
+data_filtered_df = as.data.frame(data_filtered)
+
+genes.index = screen.gene(data_filtered_df, gene.col = 1)$feature$index
+
+gene.list = data_filtered_df[genes.index,1]
+
+sampleSum = apply(data_filtered_df[,-1], 2, sum)
+
+genes.index = genes.index[!is.na(genes.index)]
+
+j <<- 1; cat("j=")
+
+gene.BEZI <- sapply(genes.index, function(i) {
+  cat(j,".." ); j <<- j+1
+  tmp <- data.frame(y = data_filtered_df[i,-1] %>% as.numeric,
+                    sampleSum = sampleSum)
+  print(dim(tmp))
+  LB(tmp)  
+})
+
+genes = t(gene.BEZI)
+
+genes = as.data.frame(genes)
+
+sig_genes = genes[genes$pval < 0.05, ]
+
+sig_genes
+```
+
+# Test #3
+
+Now, we will use the metatranscriptomic dataset from the IBDMDB.
+
+```{r }
+genefamilies_mtx = readRDS("C:/Users/olive/Desktop/Nature2019data/MTX/ficheiros/genefamilies_mtx.rds")
+
+metadata<- readRDS("C:/Users/olive/Desktop/Projeto PC/ficheiros/metadata.rds")
+```
+
+```{r }
+
+column_names <- colnames(data)[-1]
+
+# Verificar se os nomes das colunas estão na coluna "External.ID" do dataframe de metadados
+column_check <- column_names %in% metadata$External.ID
+
+print(length(column_check))
+```
+
+```{r}
+nomes_colunas_sem_sufixo <- sub("_level4ec$", "", column_names)
+
+# Filtrar o dataframe metadata
+metadata_filtrado <- metadata[metadata$External.ID %in% nomes_colunas_sem_sufixo, ]
+
+#metadata_filtrado_2 <- metadata_filtrado[metadata_filtrado$data_type == "metatranscriptomics", ]
+
+```
+
+```{r}
+#count data
+counts = genefamilies_mtx
+
+#metadata
+metadata = metadata_filtrado_2
+
+#Turning the variable of interest into a numerical variable
+metadata$health = factor(ifelse(metadata$diagnosis== "nonIBD",0,1))
+
+#creating gene indexes
+genes.index = screen.gene(counts, gene.col = 1)$feature$index
+
+#Summing the samples
+sampleSum = apply(counts, 2, sum)
+
+#removal of NAs
+genes.index = genes.index[!is.na(genes.index)]
+
+sample_id = metadata$External.ID
+
+variable =  metadata$health
+
+j <<- 1; cat("j=")
+
+gene.BEZI <- sapply(genes.index, function(i) {
+  cat(j,".." ); j <<- j+1
+  tmp <- data.frame(y = seqdata[i,] %>% as.numeric, id = sample_id, 
+                    phenotype = variable,
+                    sampleSum = sampleSum)
+  print(dim(tmp))
+  LB(tmp) 
+})
+
+#Transpose matrix
+genes = t(gene.BEZI)
+
+#Turn into dataframe
+genes = as.data.frame(genes)
+
+#Get significant genes
+sig_genes = genes[genes$pval < 0.05, ]
+
+```
+
+Testing with ecs!
+
+```{r}
+data <-readr::read_tsv("C:\\Users\\olive\\Downloads\\ecs_relab.tsv\\ecs_relab.tsv")
+
+counts = data
+```
+
+```{r}
+
+column_names <- colnames(counts)[-1]
+
+# Verificar se os nomes das colunas estão na coluna "External.ID" do dataframe de metadados
+column_check <- column_names %in% metadata$External.ID
+
+print(length(column_check))
+
+# Filtrar o dataframe metadata
+metadata_filtrado <- metadata[metadata$External.ID %in% column_names, ]
+
+metadata_filtrado_2 <- metadata_filtrado[metadata_filtrado$data_type == "metatranscriptomics", ]
+```

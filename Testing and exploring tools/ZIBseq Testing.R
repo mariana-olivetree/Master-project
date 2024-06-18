@@ -178,9 +178,44 @@ bmi = testdata[,3]
 
 bmi = as.numeric(bmi)
 
-
-
-
 results_ordinal = ZIBseq(data = data_mt, outcome = bmi)
 
 results_ordinal
+
+
+################################# Using ZIBseq code ############################
+
+#Metatranscriptomic data
+data_mt = testdata[,9:248]
+
+#Number of columns of the metatranscriptomic data
+columns = dim(data_mt)[2]
+
+#Converts the data to numeric format
+for (col in 1:columns){data_mt[,col]=as.numeric(as.character(data_mt[,col]))}
+
+group = testdata[,2]
+
+data_filtered = which(colSums(data_mt)>2*dim(data_mt)[1])
+
+final_data = data_mt[, data_filtered]
+
+sample_total = rowSums(final_data)
+
+taxa = dim(final_data)[2]
+
+beta = matrix(data = NA,taxa,2)
+
+transform = T
+
+for (i in 1:taxa) {
+  
+  x.prop = final_data[,i]/sample_total
+    
+  x.prop=sqrt(x.prop)
+
+  bereg=gamlss(x.prop ~ group, family=BEZI(sigma.link="identity"),trace=FALSE,control = gamlss.control(n.cyc = 100))
+  
+  out=summary(bereg)
+  
+  beta[i,]=out[2,c(1,4)]}

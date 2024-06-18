@@ -18,23 +18,22 @@ path_abundance_generated <- readRDS("C:/Users/olive/Desktop/Projeto PC/ficheiros
 # IBD Metadata
 #metadata = read.csv("C:/Users/olive/Desktop/Projeto PC/Fase 2/Ficheiros IBD/metadata.csv")
 
-saveRDS(metadata, file = "C:/Users/olive/Desktop/Projeto PC/ficheiros/metadata.rds")
-#metadata<- readRDS("C:/Users/olive/Desktop/Projeto PC/ficheiros/metadata.rds")
-
+#saveRDS(metadata, file = "C:/Users/olive/Desktop/Projeto PC/ficheiros/metadata.rds")
+metadata<- readRDS("C:/Users/olive/Desktop/Projeto PC/ficheiros/metadata.rds")
 
 # MTX Dataset
 #data_mtx = read.delim("C:/Users/olive/Desktop/Projeto PC/HMP2/mtx/ecs_3.tsv")
 #818 samples, same as the authors (including the column "Feature.Sample")
 
 #saveRDS(data_mtx, file = "C:/Users/olive/Desktop/Projeto PC/ficheiros/data_mtx.rds")
-data_mtx<- readRDS("C:/Users/olive/Desktop/Projeto PC/ficheiros/data_mtx.rds")
+data_mtx <- readRDS("C:/Users/olive/Desktop/Projeto PC/ficheiros/data_mtx.rds")
 
 
 # MTG Dataset
-#hmp_mtg_ecs3 =  read.delim("C:/Users/olive/Desktop/Projeto PC/HMP2/mtg/ecs_3.tsv") 
+hmp_mtg_ecs3 =  read.delim("C:/Users/olive/Desktop/Projeto PC/HMP2/mtg/ecs_3.tsv") 
 
-#saveRDS(data_mtx, file = "C:/Users/olive/Desktop/Projeto PC/ficheiros/hmp_mtg_ecs3.rds")
-hmp_mtg_ecs3<- readRDS("C:/Users/olive/Desktop/Projeto PC/ficheiros/hmp_mtg_ecs3.rds")
+#saveRDS(hmp_mtg_ecs3, file = "C:/Users/olive/Desktop/Projeto PC/ficheiros/hmp_mtg_ecs3.rds")
+#hmp_mtg_ecs3<- readRDS("C:/Users/olive/Desktop/Projeto PC/ficheiros/hmp_mtg_ecs3.rds")
 
 ############### DataFrame Fixing ###############################################
 
@@ -58,6 +57,12 @@ new_colnames_1 <- gsub("_.*", "", colnames(hmp_mtg_ecs3))
 
 # Assign new column names to the dataset
 colnames(hmp_mtg_ecs3) <- new_colnames_1
+
+
+library(tidyverse)
+
+a <- metadata %>% pull(External.ID)
+a
 
 
 ############### Analysis of Generated taxonomic and functional profiles ########
@@ -124,6 +129,11 @@ length(unique(metadata_mtg$Participant.ID))
 #130, not 132
 
 
+intersect(metadata_mtx$Participant.ID, metadata_mtg$Participant.ID)
+
+intersect(colnames(metadata_generated), metadata$External.ID)
+
+
 ############### Is There a Match between MTX and IBD METADADA? #################
 
 #Removing "Feature.Sample" from vector - MTX 
@@ -147,6 +157,9 @@ data_mtx_zero = data_mtx[-1]
 
 #FINAL DATASET OF MTX -> MTX with MATCHES
 data_mtx_fil = data_mtx_zero[names(data_mtx_zero) %in% external_id_fil ]
+
+length(unique(metadata_mtx_fil$Participant.ID))
+#104 PARTICIPANTS
 
 ################### Checking zero proportion
 
@@ -176,24 +189,6 @@ metadata_fem_mas = metadata_mtx_fil[metadata_mtx_fil$reads_raw %in% reads_raw_fi
 table(metadata_fem_mas$sex)
 #52 female + 52 male
 
-############### PARTICIPANT ID FROM MTX ########################################
-
-p.id = metadata_fem_mas$Participant.ID
-
-metadata_pid = metadata[metadata$Participant.ID %in% p.id,]
-
-metadata_pid_mtx = subset(metadata_pid, data_type == "metatranscriptomics")
-
-metadata_pid_mtx$External.ID = gsub("_.*", "", metadata_pid_mtx$External.ID)
-
-data_mtx_fil_2 = data_mtx[names(data_mtx_zero) %in% metadata_pid_mtx$External.ID ]
-
-zero.proportion.mtx_fil_2 = 
-  data_mtx_fil_2 %>% 
-  apply(1, function(x) mean(x == 0)) 
-
-zero.proportion.mtx_fil_2 %>% mean #94.2%
-
 
 ############### Is There a Match between MTG and IBD METADADA? #################
 
@@ -222,6 +217,7 @@ length(unique(metadata_mtg_fil$External.ID)) #there are 1593 samples still
 
 mtg_dataset_fil = hmp_mtg_ecs3[names(hmp_mtg_ecs3) %in% match_samples_mtg]
 
+sum(mtg_dataset_fil==0)/(dim(mtg_dataset_fil)[1]*dim(mtg_dataset_fil)[2])
 
 zero.proportion.mtg_fil_ =
   mtg_dataset_fil %>% 
@@ -229,7 +225,7 @@ zero.proportion.mtg_fil_ =
 
 zero.proportion.mtg_fil_ %>% mean #91.7%
 
-############### PARTICIPANT ID FROM MTX ########################################
+############### PARTICIPANT ID FROM MTX IN MTG ########################################
 
 p.id = metadata_fem_mas$Participant.ID
 
@@ -242,6 +238,7 @@ metadata_pid_mtg$External.ID = gsub("_.*", "", metadata_pid_mtg$External.ID)
 # THIS IS looks like the FINAL MTG DATASET !!!!!!!!!!!!!!!!! 1585 metagenomics
 data_mtg_fil_2 = hmp_mtg_ecs3[names(hmp_mtg_ecs3) %in% metadata_pid_mtg$External.ID ]
 
+length(unique(metadata_pid_mtg$Participant.ID))
 
 zero.proportion.mtg_fil_2 = 
   data_mtg_fil_2 %>% 
